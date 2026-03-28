@@ -102,35 +102,37 @@ st.markdown("""
 
 
 # --- ZONE DE RÉPONSES (DÉROULANTE ET ENCADRÉE PROPREMENT) ---
-# Tout ce qui est ici va défiler sous l'entête
 chat_placeholder = st.container()
 
 with chat_placeholder:
-    # Initialisation de l'historique dans la session
     if "messages" not in st.session_state:
         st.session_state.messages = []
 
-    # Affichage des messages encadrés proprement
     for m in st.session_state.messages:
         with st.chat_message(m["role"]):
             st.markdown(m["content"])
 
 
-# --- LOGIQUE DU CHAT ---
-if api_key:
-    try:
-        from langchain_groq import ChatGroq
+# --- LOGIQUE DU CHAT (MODIFIÉE POUR LE DÉPLOIEMENT) ---
 
-        # Modèle Llama 3.1 réactif
-        llm = ChatGroq(
-            temperature=0.7,
-            groq_api_key=api_key,
-            model_name="llama-3.1-8b-instant"
-        )
+# On affiche la barre de saisie TOUJOURS (en dehors du if api_key)
+prompt = st.chat_input("Dites-moi tout...")
 
-        # BARRE DE SAISIE (Fixée en bas par nature dans Streamlit)
-        if prompt := st.chat_input("Dites-moi tout..."):
-            # 1. Ajouter le message utilisateur à l'historique
+if prompt:
+    # On vérifie la clé seulement au moment de l'envoi
+    if not api_key:
+        st.error("⚠️ La clé API est manquante. Veuillez configurer les 'Secrets' sur Streamlit Cloud.")
+    else:
+        try:
+            from langchain_groq import ChatGroq
+
+            llm = ChatGroq(
+                temperature=0.7,
+                groq_api_key=api_key,
+                model_name="llama-3.1-8b-instant"
+            )
+
+            # 1. Ajouter le message utilisateur
             st.session_state.messages.append({"role": "user", "content": prompt})
             with chat_placeholder:
                 with st.chat_message("user"):
@@ -141,22 +143,17 @@ if api_key:
                 with st.chat_message("assistant"):
                     with st.spinner("MoMoFr écrit sa réponse..."):
                         try:
-                            # Requête au modèle
                             response = llm.invoke(prompt)
                             answer = response.content
-                            
-                            # Affichage de la réponse
                             st.markdown(answer)
                             st.session_state.messages.append({"role": "assistant", "content": answer})
-                        
                         except Exception as e:
                             st.error(f"❌ Oups, petit souci : {e}")
 
-            # On force le rafraîchissement pour que les messages s'affichent instantanément
             st.rerun()
 
-    except Exception as e:
-        st.error(f"⚠️ Erreur système : {e}")
+        except Exception as e:
+            st.error(f"⚠️ Erreur système : {e}")
 
 # --- BARRE LATÉRALE ---
 with st.sidebar:

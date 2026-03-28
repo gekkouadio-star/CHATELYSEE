@@ -1,0 +1,18 @@
+# --- SÉCURITÉ (TRÈS IMPORTANT) ---
+.env
+data/
+chroma_db/
+chroma_db_local/
+
+# --- ENVIRONNEMENT PYTHON ---
+env/
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# --- SYSTÈME MAC & LOGS ---
+.DS_Store
+*.log
+.streamlit/config.toml

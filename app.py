@@ -4,16 +4,16 @@ from dotenv import load_dotenv
 
 # 1. On tente le local (.env)
 load_dotenv()
+# --- RÉCUPÉRATION SÉCURISÉE DE LA CLÉ ---
 api_key = os.getenv("GROQ_API_KEY")
 
-# 2. Si on ne trouve rien, on tente les Secrets Streamlit sans faire planter l'app
-if not api_key:
-    try:
-        if "GROQ_API_KEY" in st.secrets:
-            api_key = st.secrets["GROQ_API_KEY"]
-    except Exception:
-        # Si st.secrets n'existe pas du tout sur le serveur, on ne fait rien
-        api_key = None
+# On utilise un bloc try/except pour éviter que l'app disparaisse
+try:
+    if not api_key and "GROQ_API_KEY" in st.secrets:
+        api_key = st.secrets["GROQ_API_KEY"]
+except Exception:
+    # Si les secrets ne sont pas configurés sur Streamlit Cloud, on ne crash pas
+    api_key = None
 
 # 2. Configuration
 st.set_page_config(page_title="MoMoFr", page_icon="🤖", layout="centered")

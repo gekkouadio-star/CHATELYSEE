@@ -2,9 +2,16 @@ import streamlit as st
 import os
 from dotenv import load_dotenv
 
-# 1. Chargement de la clé API
+# Charge le .env s'il existe (pour le local)
 load_dotenv()
+
+# Cherche la clé dans les variables d'environnement (Local ou Cloud)
+# Streamlit Cloud injecte automatiquement les "Secrets" dans os.environ
 api_key = os.getenv("GROQ_API_KEY")
+
+# Si on est sur Streamlit Cloud et que os.getenv n'a rien trouvé, on cherche dans st.secrets
+if not api_key and "GROQ_API_KEY" in st.secrets:
+    api_key = st.secrets["GROQ_API_KEY"]
 
 # 2. Configuration
 st.set_page_config(page_title="MoMoFr", page_icon="🤖", layout="centered")
